@@ -113,7 +113,9 @@ def generate_orders_pdf(queryset):
     data = [
         [
             "Order No",
-            "Shop",
+            "Shop Name",
+            "Place",
+            "Mobile",
             "Status",
             "Total",
         ]
@@ -125,12 +127,21 @@ def generate_orders_pdf(queryset):
 
         grand_total += order.total_amount
 
+        try:
+            shop_name = order.shop.shop.shop_name
+            shop_place = order.shop.shop.place
+        except Exception:
+            shop_name = "—"
+            shop_place = "—"
+
         data.append(
             [
                 order.order_number,
-                order.shop_name,
+                shop_name,
+                shop_place,
+                order.shop.mobile_number,
                 order.status,
-                f"₹ {order.total_amount}",
+                f"Rs {order.total_amount}",
             ]
         )
 

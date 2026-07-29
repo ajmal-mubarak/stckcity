@@ -129,7 +129,11 @@ class OrderListSerializer(serializers.ModelSerializer):
         )
 
 class AdminOrderSerializer(serializers.ModelSerializer):
-    shop_name = serializers.CharField(read_only=True)
+    shop_name = serializers.SerializerMethodField()
+    shop_place = serializers.SerializerMethodField()
+    shop_address = serializers.SerializerMethodField()
+    shop_mobile = serializers.SerializerMethodField()
+    items = OrderItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
@@ -137,11 +141,37 @@ class AdminOrderSerializer(serializers.ModelSerializer):
             "id",
             "order_number",
             "shop_name",
+            "shop_place",
+            "shop_address",
+            "shop_mobile",
             "status",
             "total_amount",
             "required_date",
+            "notes",
             "created_at",
+            "items",
         )
+
+    def get_shop_name(self, obj):
+        try:
+            return obj.shop.shop.shop_name
+        except Exception:
+            return ""
+
+    def get_shop_place(self, obj):
+        try:
+            return obj.shop.shop.place
+        except Exception:
+            return ""
+
+    def get_shop_address(self, obj):
+        try:
+            return obj.shop.shop.address
+        except Exception:
+            return ""
+
+    def get_shop_mobile(self, obj):
+        return obj.shop.mobile_number
 
 class UpdateOrderStatusSerializer(serializers.Serializer):
     status = serializers.ChoiceField(

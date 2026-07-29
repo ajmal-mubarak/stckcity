@@ -6,7 +6,7 @@ from common.permissions import IsAdminOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 # pyrefly: ignore [missing-import]
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import Brand, Category, Product
+from .models import Brand, Category, Product, ProductImage
 # pyrefly: ignore [missing-import]
 from .serializers import BrandSerializer, CategorySerializer, ProductSerializer
 
@@ -59,3 +59,21 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering = [
         "name",
     ]
+
+    def _handle_image(self, product, request):
+        """Save uploaded image file as a ProductImage for this product."""
+        image_file = request.FILES.get("image")
+        if image_file:
+            ProductImage.objects.create(product=product, image=image_file)
+
+    def perform_create(self, serializer):
+        product = serializer.save()
+        self._handle_image(product, self.request)
+
+    def perform_update(self, serializer):
+        product = serializer.save()
+        # Replace the first image if a new one is uploaded
+        image_file = self.request.FILES.get("image")
+        if image_file:
+            product.images.all().delete()
+            ProductImage.objects.create(product=product, image=image_file)

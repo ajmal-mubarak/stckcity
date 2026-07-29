@@ -12,7 +12,9 @@ def generate_orders_excel(queryset):
 
     headers = [
         "Order Number",
-        "Shop",
+        "Shop Name",
+        "Place",
+        "Mobile",
         "Status",
         "Required Date",
         "Total Amount",
@@ -45,41 +47,21 @@ def generate_orders_excel(queryset):
 
     for order in queryset:
 
-        sheet.cell(
-            row=row,
-            column=1,
-            value=order.order_number,
-        )
+        try:
+            shop_name = order.shop.shop.shop_name
+            shop_place = order.shop.shop.place
+        except Exception:
+            shop_name = ""
+            shop_place = ""
 
-        sheet.cell(
-            row=row,
-            column=2,
-            value=order.shop_name,
-        )
-
-        sheet.cell(
-            row=row,
-            column=3,
-            value=order.status,
-        )
-
-        sheet.cell(
-            row=row,
-            column=4,
-            value=str(order.required_date),
-        )
-
-        sheet.cell(
-            row=row,
-            column=5,
-            value=float(order.total_amount),
-        )
-
-        sheet.cell(
-            row=row,
-            column=6,
-            value=order.created_at.strftime("%d-%m-%Y %H:%M"),
-        )
+        sheet.cell(row=row, column=1, value=order.order_number)
+        sheet.cell(row=row, column=2, value=shop_name)
+        sheet.cell(row=row, column=3, value=shop_place)
+        sheet.cell(row=row, column=4, value=order.shop.mobile_number)
+        sheet.cell(row=row, column=5, value=order.status)
+        sheet.cell(row=row, column=6, value=str(order.required_date))
+        sheet.cell(row=row, column=7, value=float(order.total_amount))
+        sheet.cell(row=row, column=8, value=order.created_at.strftime("%d-%m-%Y %H:%M"))
 
         row += 1
 

@@ -12,6 +12,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .auth_serializers import LoginSerializer
+from .models import Shop
+
 
 class RegisterAPIView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -53,3 +55,44 @@ class LoginAPIView(generics.GenericAPIView):
             }
 
         return Response(data)
+
+
+class ShopListAPIView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        status_filter = request.query_params.get("status", None)
+        shops = Shop.objects.select_related("user").all().order_by("-created_at")
+        if status_filter:
+            shops = shops.filter(status=status_filter.upper())
+        data = [
+            {
+                "id": shop.id,
+                "shop_name": shop.shop_name,
+                "owner_name": shop.owner_name,
+                "place": shop.place,
+                "mobile_number": shop.user.mobile_number,
+                "status": shop.status,
+                "created_at": shop.created_at,
+            }
+            for shop in shops
+        ]
+        return Response(data)
+
+
+class ShopStatusUpdateAPIView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def patch(self, request, pk):
+        try:
+            shop = Shop.objects.get(pk=pk)
+        except Shop.DoesNotExist:
+            return Response({"detail": "Shop not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get("status")
+        if new_status not in [Shop.Status.ACTIVE, Shop.Status.PENDING, Shop.Status.INACTIVE]:
+            return Response({"detail": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
+
+        shop.status = new_status
+        shop.save()
+        return Response({"id": shop.id, "status": shop.status})
