@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 # pyrefly: ignore [missing-import]
 from django.contrib import admin
 # pyrefly: ignore [missing-import]
-from django.urls import path
+from django.urls import path, include
 # pyrefly: ignore [missing-import]
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -14,6 +14,16 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
+    path("api/auth/", include("accounts.urls")),
+
+    path("api/", include("catalog.urls")),
+
+    path("api/orders/", include("orders.urls")),
+
+    path("api/", include("reports.urls")),
+
+    path("api/", include("dashboard.urls")),
 
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
 
